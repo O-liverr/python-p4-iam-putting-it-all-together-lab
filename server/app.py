@@ -40,7 +40,7 @@ class CheckSession(Resource):
     def get(self):
         user_id = session.get('user_id')
         if user_id:
-            user = User.query.get(user_id)
+            user = db.session.get(User, user_id)  # Fixed to suppress LegacyAPIWarning
             return make_response(user.to_dict(only=('id', 'username', 'image_url', 'bio')), 200)
         return make_response({'error': 'Unauthorized'}, 401)
 
