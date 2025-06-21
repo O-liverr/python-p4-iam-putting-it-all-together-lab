@@ -1,9 +1,21 @@
-#!/usr/bin/env python3
+import pytest
+from app import app as flask_app
+from models import db
 
-def pytest_itemcollected(item):
-    par = item.parent.obj
-    node = item.obj
-    pref = par.__doc__.strip() if par.__doc__ else par.__class__.__name__
-    suf = node.__doc__.strip() if node.__doc__ else node.__name__
-    if pref or suf:
-        item._nodeid = ' '.join((pref, suf))
+@pytest.fixture
+def app():
+    flask_app.config['TESTING'] = True
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+    with flask_app.app_context():
+        db.create_all()
+        yield flask_app
+        db.drop_all()
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+@pytest.fixture
+def db_session(app):
+    with app.app_context():
+        yield db
